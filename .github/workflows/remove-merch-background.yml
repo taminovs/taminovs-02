@@ -1,0 +1,33 @@
+name: Remove merch background
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/remove-merch-background.yml'
+      - 'index.html'
+permissions:
+  contents: write
+jobs:
+  remove-background:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove merch artwork background
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('#merch .merch-bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#050507;opacity:.34;pointer-events:none}.merch-bg img{position:absolute;display:block;height:125%;width:auto;max-width:none;left:54%;top:50%;transform:translate(-50%,-50%) scale(1.03);opacity:.42;filter:saturate(.72) contrast(.9) brightness(.72) blur(1.5px);animation:merchFloat 14s ease-in-out infinite}.merch-bg:before{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,rgba(5,5,7,.98) 0%,rgba(5,5,7,.94) 25%,rgba(5,5,7,.88) 50%,rgba(5,5,7,.94) 75%,rgba(5,5,7,.99) 100%),linear-gradient(0deg,rgba(5,5,7,.96),rgba(5,5,7,.84))}.merch-bg:after{content:"02";position:absolute;z-index:3;left:50%;top:48%;transform:translate(-50%,-50%);font-size:min(48vw,680px);font-weight:900;letter-spacing:-.12em;color:rgba(155,92,255,.035);filter:blur(12px);pointer-events:none;animation:merch02 12s ease-in-out infinite}', '#merch .merch-bg{display:none}')
+          s=s.replace('@keyframes merchFloat{0%,100%{transform:translate(-50%,-50%) scale(1.03)}50%{transform:translate(-48%,-51%) scale(1.07)}}','')
+          s=s.replace('@keyframes merch02{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.45}50%{transform:translate(-50%,-52%) scale(1.035);opacity:.7}}','')
+          s=s.replace('<div class="merch-bg"><img src="anime-girl-02.svg" alt=""></div>','')
+          p.write_text(s)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Remove merch background artwork"
+          git push
