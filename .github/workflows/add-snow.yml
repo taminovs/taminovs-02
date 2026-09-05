@@ -1,0 +1,31 @@
+name: Add snowfall
+on:
+  push:
+    branches: [main]
+jobs:
+  snow:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add snowfall to site
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          css='<style id="snow-style">#snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:.7}</style>'
+          script='<script src="snow.js"></script>'
+          if 'id="snow-style"' not in s:
+              s=s.replace('</head>',css+'</head>')
+          if 'src="snow.js"' not in s:
+              s=s.replace('</body>',script+'</body>')
+          p.write_text(s)
+          PY
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m "Add snowfall effect"
+          git push
